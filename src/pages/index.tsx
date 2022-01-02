@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import type { NextPage } from 'next';
 import { FileUpload } from 'components/FileUpload';
 import { swapKeyValueOfObject } from 'utils';
 import { getCSVContent, parseCSVString } from 'utils/csv';
+
+// required for dayjs parsing to work in firefox
+dayjs.extend(customParseFormat);
 
 import { HEADER_LABELS } from 'constants/header';
 const labelKeyMap = Object.freeze(swapKeyValueOfObject(HEADER_LABELS));
