@@ -5,7 +5,7 @@ import { Dropzone } from '@mantine/dropzone';
 type UploadProps = {
   accept?: string[];
   isLoading?: boolean;
-  onDrop: (file: File[]) => Promise<void>;
+  onDrop: (file: File[]) => void;
 };
 
 export function FileUpload({ accept, onDrop, isLoading = false }: UploadProps) {

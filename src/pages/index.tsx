@@ -6,40 +6,18 @@ import { swapKeyValueOfObject } from 'utils';
 import { getCSVContent, parseCSVString } from 'utils/csv';
 
 import { HEADER_LABELS } from 'constants/header';
+const labelKeyMap = Object.freeze(swapKeyValueOfObject(HEADER_LABELS));
 
 const Home: NextPage = () => {
   const [records, setRecords] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  async function onDrop(file) {
-    try {
-      setIsLoading(true);
-      const content = await getCSVContent(file);
-      const ax = swapKeyValueOfObject(HEADER_LABELS);
-
-      const result = parseCSVString(content, {
-        columnValueParser: key => {
-          if (!ax[key]) {
-            throw Error(`${key} is not a valid column`);
-          }
-          return ax[key] as string;
-        },
-        rowValueParser: (header, value) => {
-          if (['quantity', 'price'].includes(header)) {
-            return Number(value.replaceAll(`\"`, '').replaceAll(',', ''));
-          } else if (header === 'date') {
-            return dayjs(value, 'DD-MMM-YY').format('YYYY/MM/DD');
-          }
-          return value;
-        },
-      });
-
-      setRecords(result);
-    } catch (_err) {
-      console.log('Error', _err);
-    } finally {
-      setIsLoading(false);
-    }
+  function onDrop(file) {
+    setIsLoading(true);
+    parseTradesFile(file)
+      .then(setRecords)
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
   }
 
   return (
@@ -52,9 +30,29 @@ const Home: NextPage = () => {
         isLoading={isLoading}
         accept={['application/vnd.ms-excel', 'text/csv']}
       />
-      <pre>{JSON.stringify(records, null, 2)}</pre>
+      {records && <pre>{JSON.stringify(records, null, 2)}</pre>}
     </section>
   );
 };
 
 export default Home;
+
+async function parseTradesFile(file: File[]) {
+  const content = await getCSVContent(file);
+  const result = parseCSVString(content, {
+    columnValueParser: key => {
+      return labelKeyMap[key] as string;
+    },
+    rowValueParser: (header, value) => {
+      if (['quantity', 'price'].includes(header)) {
+        return Number(value.replaceAll(`\"`, '').replaceAll(',', ''));
+      } else if (header === 'date') {
+        return dayjs(value, 'DD-MMM-YY').format('YYYY/MM/DD');
+      }
+      return value;
+    },
+  });
+
+  console.log({ result });
+  return result;
+}
