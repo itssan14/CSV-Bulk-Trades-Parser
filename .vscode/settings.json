@@ -1,0 +1,22 @@
+{
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "search.exclude": {
+    ".next/**": true,
+    "dist/**": true,
+    "out/**": true,
+    "build/**": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "diffEditor.ignoreTrimWhitespace": false,
+  "files.trimTrailingWhitespace": true,
+  "editor.renderFinalNewline": true,
+  // Tailwind Configuration
+  "css.validate": false,
+  "editor.quickSuggestions": {
+    "strings": true
+  }
+}
