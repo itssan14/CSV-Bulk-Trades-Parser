@@ -19,7 +19,7 @@ export function FileUpload({ accept, onDrop, isLoading = false }: UploadProps) {
         onDrop={onDrop}
         loading={isLoading}
       >
-        {status => {
+        {() => {
           return (
             <Group
               position="center"
@@ -27,7 +27,7 @@ export function FileUpload({ accept, onDrop, isLoading = false }: UploadProps) {
               style={{ minHeight: 220, pointerEvents: 'none' }}
             >
               <div>
-                <Text size="xl" inline>
+                <Text size="md" inline>
                   Drag files here or click to select files
                 </Text>
               </div>

@@ -66,7 +66,6 @@ const Home: NextPage = () => {
             <caption>Total quantity traded Buy + Sell actions</caption>
             <thead>
               <tr>
-                <th>Date</th>
                 <th>Symbol</th>
                 <th>Name</th>
                 <th style={{ textAlign: 'right' }}>Trade Volume / Quantity</th>
@@ -75,7 +74,6 @@ const Home: NextPage = () => {
             <tbody>
               {records.map(row => (
                 <tr key={row.symbol}>
-                  <td>{row.date}</td>
                   <td>{row.symbol}</td>
                   <td>{row.name}</td>
                   <td style={{ textAlign: 'right' }}>
@@ -112,14 +110,14 @@ async function parseTradesFile(files: File[]): Promise<Trade[]> {
 }
 
 function formatTrades(trades: Trade[]): unknown[] {
-  return Object.entries(groupedByMap(trades, 'symbol'))
+  const result = Object.entries(groupedByMap(trades, 'symbol'))
     .map(([_, value]) => {
       let obj = { ...value[0], quantity: 0 };
 
+      delete obj.price;
       delete obj.client;
       delete obj.action;
       delete obj.remarks;
-      delete obj.price;
 
       value.forEach(curr => {
         if (curr.action === Actions.BUY) {
@@ -131,5 +129,9 @@ function formatTrades(trades: Trade[]): unknown[] {
 
       return obj;
     })
-    .filter(val => val.quantity !== 0);
+    .filter(val => val.quantity !== 0)
+    // sort in descending order -> most bought first
+    .sort((a, b) => b.quantity - a.quantity);
+
+  return result;
 }
