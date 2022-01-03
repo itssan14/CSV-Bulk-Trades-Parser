@@ -10,6 +10,10 @@ const rowParser: (value: string) => string = pipe(
   match(/(\s*"[^"]+"\s*|\s*[^,]+|,)(?=,|$)/g), // escape comma inside quotes
   mapFn(trimFn)
 );
+const replaceAll =
+  (target: any, replaceWith: string) =>
+  (str: string): string =>
+    str.replaceAll(target, replaceWith);
 const contentParser: (content: string) => string[] = pipe(
   trimFn,
   split(/\r\n|\n/)
@@ -39,9 +43,10 @@ export function parseCSVString(
   const headers = rowParser(headerRow);
 
   const headerSet = new Set();
+  const parseHead = pipe(replaceAll(`\"`, ''), trimFn, columnValueParser);
   for (let [idx, header] of Object.entries(headers)) {
     // format the header name to a custom format
-    header = columnValueParser(header);
+    header = parseHead(header);
     // check for header values that are unexpected or duplicated
     //  in the uploaded file
     if (header === undefined) {
@@ -57,8 +62,12 @@ export function parseCSVString(
   const csvBody = [];
   for (const [rowNumber, row] of Object.entries(contentRows)) {
     let contentRow = {};
+    const parseValue = pipe(replaceAll(`\"`, ''), trimFn);
     for (const [key, rowItem] of Object.entries(rowParser(row))) {
-      contentRow[headers[key]] = rowValueParser(headers[key], rowItem);
+      contentRow[headers[key]] = rowValueParser(
+        headers[key],
+        parseValue(rowItem)
+      );
     }
     validateContentRow(contentRow, Number.parseInt(rowNumber, 10) + 1);
     csvBody.push(contentRow);

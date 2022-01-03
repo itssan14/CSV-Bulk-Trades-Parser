@@ -121,7 +121,7 @@ async function parseTradesFile(files: File[]) {
     },
     rowValueParser: (header, value) => {
       if (['quantity', 'price'].includes(header)) {
-        return Number(value.replaceAll(`\"`, '').replaceAll(',', ''));
+        return Number(value.replaceAll(',', ''));
       } else if (header === 'date') {
         return dayjs(value, 'DD-MMM-YY').format('YYYY/MM/DD');
       }
