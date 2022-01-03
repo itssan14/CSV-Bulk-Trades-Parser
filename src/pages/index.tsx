@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { NextPage } from 'next';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { Container, Table } from '@mantine/core';
 import { useNotifications } from '@mantine/notifications';
 
 import { FileUpload } from 'components/FileUpload';
@@ -67,7 +68,7 @@ const Home: NextPage = () => {
   }
 
   return (
-    <section>
+    <Container>
       <header>
         <h3>Upload bulk CSV here</h3>
       </header>
@@ -76,8 +77,35 @@ const Home: NextPage = () => {
         isLoading={isLoading}
         accept={['application/vnd.ms-excel', 'text/csv']}
       />
-      {records && <pre>{JSON.stringify(records, null, 2)}</pre>}
-    </section>
+      {records ? (
+        <>
+          <div style={{ margin: '24px 0' }} />
+          <Table striped highlightOnHover>
+            <caption>Total quantity traded Buy + Sell actions</caption>
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Date</th>
+                <th>Name</th>
+                <th style={{ textAlign: 'right' }}>Trade Volume / Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {records.map(element => (
+                <tr key={element.symbol}>
+                  <td>{element.date}</td>
+                  <td>{element.symbol}</td>
+                  <td>{element.name}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    {Number(element.quantity).toLocaleString('en-IN')}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </>
+      ) : null}
+    </Container>
   );
 };
 

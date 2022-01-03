@@ -30,7 +30,7 @@ export default function App(props: AppProps) {
             }
             styles={theme => ({
               main: {
-                height: `calc(100vh - 60px)`,
+                minHeight: `calc(100vh - 60px)`,
                 backgroundColor:
                   theme.colorScheme === 'dark'
                     ? theme.colors.dark[8]
