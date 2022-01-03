@@ -5,8 +5,13 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useNotifications } from '@mantine/notifications';
 
 import { FileUpload } from 'components/FileUpload';
-import { swapKeyValueOfObject } from 'utils';
+import { groupedByMap, swapKeyValueOfObject } from 'utils';
 import { getCSVContent, parseCSVString } from 'utils/csv';
+
+enum Actions {
+  BUY = 'BUY',
+  SELL = 'SELL',
+}
 
 // required for dayjs parsing to work in firefox
 dayjs.extend(customParseFormat);
@@ -23,8 +28,26 @@ const Home: NextPage = () => {
     (async function () {
       try {
         setIsLoading(true);
-        const results = await parseTradesFile(file);
-        console.log({ results });
+        const trades = await parseTradesFile(file);
+        const results = Object.entries(groupedByMap(trades, 'symbol')).map(
+          ([_, value]) => {
+            let obj = Object.assign({}, value[0]);
+            delete obj.client;
+            delete obj.action;
+            delete obj.remarks;
+
+            value.forEach(curr => {
+              if (curr.action === Actions.BUY) {
+                obj.quantity += curr.quantity;
+              } else if (curr.action === Actions.SELL) {
+                obj.quantity -= curr.quantity;
+              }
+            });
+
+            return obj;
+          }
+        );
+
         setRecords(results);
       } catch (error) {
         notifications.showNotification({

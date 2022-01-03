@@ -10,3 +10,13 @@ export function swapKeyValueOfObject(obj: swap = {}): swap {
     Object.entries(obj).map(([key, value]) => [value, key])
   );
 }
+
+export function groupedByMap(
+  arr: Record<string, any>[],
+  key: string
+): Record<string, any> {
+  return arr.reduce(
+    (res, obj) => ({ ...res, [obj[key]]: [...(res[obj[key]] || []), obj] }),
+    {}
+  );
+}
