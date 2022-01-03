@@ -32,15 +32,14 @@ const Home: NextPage = () => {
         const trades = await parseTradesFile(file);
         const results = Object.entries(groupedByMap(trades, 'symbol'))
           .map(([_, value]) => {
-            const [first, ...rest] = value;
-            let obj = Object.assign({}, first);
+            let obj = Object.assign({}, value[0], { quantity: 0 });
 
             delete obj.client;
             delete obj.action;
             delete obj.remarks;
             delete obj.price;
 
-            rest.forEach(curr => {
+            value.forEach(curr => {
               if (curr.action === Actions.BUY) {
                 obj.quantity += curr.quantity;
               } else if (curr.action === Actions.SELL) {
