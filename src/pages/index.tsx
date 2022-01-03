@@ -60,6 +60,7 @@ const Home: NextPage = () => {
           title: 'Parsing Error',
           message: error?.message ?? 'Something went wrong!',
         });
+        setRecords(null);
         console.error(error);
       } finally {
         setIsLoading(false);
@@ -103,6 +104,7 @@ const Home: NextPage = () => {
               ))}
             </tbody>
           </Table>
+          <div style={{ padding: 16 }} />
         </>
       ) : null}
     </Container>

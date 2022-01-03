@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { AppProps } from 'next/app';
-import { MantineProvider, AppShell, Header } from '@mantine/core';
+import { MantineProvider, AppShell, Header, Text } from '@mantine/core';
 import { NotificationsProvider } from '@mantine/notifications';
 
 export default function App(props: AppProps) {
@@ -22,15 +22,19 @@ export default function App(props: AppProps) {
       >
         <NotificationsProvider>
           <AppShell
+            fixed
             padding="md"
             header={
-              <Header height={60} padding="md">
-                Bulk Trades
+              <Header height={60} padding="sm">
+                <div style={{ paddingLeft: 12 }}>
+                  <Text size={'xl'} weight={500}>
+                    Bulk Trades
+                  </Text>
+                </div>
               </Header>
             }
             styles={theme => ({
               main: {
-                minHeight: `calc(100vh - 60px)`,
                 backgroundColor:
                   theme.colorScheme === 'dark'
                     ? theme.colors.dark[8]
