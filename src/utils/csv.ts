@@ -71,7 +71,7 @@ export function parseCSVString(
   return csvBody;
 }
 
-export async function getCSVContent([file]: File[]): Promise<string> {
+export async function getCSVContent(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {

@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import type { NextPage } from 'next';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import type { NextPage } from 'next';
+import { useNotifications } from '@mantine/notifications';
+
 import { FileUpload } from 'components/FileUpload';
 import { swapKeyValueOfObject } from 'utils';
 import { getCSVContent, parseCSVString } from 'utils/csv';
@@ -15,13 +17,27 @@ const labelKeyMap = Object.freeze(swapKeyValueOfObject(HEADER_LABELS));
 const Home: NextPage = () => {
   const [records, setRecords] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const notifications = useNotifications();
 
   function onDrop(file) {
-    setIsLoading(true);
-    parseTradesFile(file)
-      .then(setRecords)
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
+    (async function () {
+      try {
+        setIsLoading(true);
+        const results = await parseTradesFile(file);
+        console.log({ results });
+        setRecords(results);
+      } catch (error) {
+        notifications.showNotification({
+          color: 'red',
+          autoClose: 5000,
+          title: 'Parsing Error',
+          message: error?.message ?? 'Something went wrong!',
+        });
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }
 
   return (
@@ -41,9 +57,9 @@ const Home: NextPage = () => {
 
 export default Home;
 
-async function parseTradesFile(file: File[]) {
-  const content = await getCSVContent(file);
-  const result = parseCSVString(content, {
+async function parseTradesFile(files: File[]) {
+  const content = await getCSVContent(files[0]);
+  return parseCSVString(content, {
     columnValueParser: key => {
       return labelKeyMap[key] as string;
     },
@@ -56,7 +72,4 @@ async function parseTradesFile(file: File[]) {
       return value;
     },
   });
-
-  console.log({ result });
-  return result;
 }
