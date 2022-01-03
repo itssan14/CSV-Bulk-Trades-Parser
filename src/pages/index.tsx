@@ -29,14 +29,17 @@ const Home: NextPage = () => {
       try {
         setIsLoading(true);
         const trades = await parseTradesFile(file);
-        const results = Object.entries(groupedByMap(trades, 'symbol')).map(
-          ([_, value]) => {
-            let obj = Object.assign({}, value[0]);
+        const results = Object.entries(groupedByMap(trades, 'symbol'))
+          .map(([_, value]) => {
+            const [first, ...rest] = value;
+            let obj = Object.assign({}, first);
+
             delete obj.client;
             delete obj.action;
             delete obj.remarks;
+            delete obj.price;
 
-            value.forEach(curr => {
+            rest.forEach(curr => {
               if (curr.action === Actions.BUY) {
                 obj.quantity += curr.quantity;
               } else if (curr.action === Actions.SELL) {
@@ -45,8 +48,8 @@ const Home: NextPage = () => {
             });
 
             return obj;
-          }
-        );
+          })
+          .filter(val => val.quantity !== 0);
 
         setRecords(results);
       } catch (error) {
