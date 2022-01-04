@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { NextPage } from 'next';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { Container, Table } from '@mantine/core';
+import { Container, Table, Button, Input, Grid, Col } from '@mantine/core';
 import { useNotifications } from '@mantine/notifications';
 
+import useDebounce from 'hooks/useDebounce';
 import { FileUpload } from 'components/FileUpload';
 import { groupedByMap, swapKeyValueOfObject } from 'utils';
 import { getCSVContent, parseCSVString } from 'utils/csv';
@@ -17,9 +18,28 @@ dayjs.extend(customParseFormat);
 const labelKeyMap = Object.freeze(swapKeyValueOfObject(HEADER_LABELS));
 
 const Home: NextPage = () => {
+  const [search, setSearch] = useState('');
   const [records, setRecords] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const notifications = useNotifications();
+
+  const searchTerm = useDebounce(search, 300);
+
+  const data = useMemo(() => {
+    if (records) {
+      return searchTerm === ''
+        ? records
+        : records.filter(record => {
+            const key = searchTerm.toLowerCase();
+            return (
+              record.symbol.toLowerCase().includes(key) ||
+              record.name.toLowerCase().includes(key)
+            );
+          });
+    }
+
+    return null;
+  }, [searchTerm, records]);
 
   function onDrop(file) {
     setIsLoading(true);
@@ -49,19 +69,32 @@ const Home: NextPage = () => {
       });
   }
 
+  function reset() {
+    setRecords(null);
+    setSearch('');
+  }
+
   return (
     <Container>
       <header>
-        <h3>Upload bulk CSV here</h3>
+        <h3>Trade details</h3>
       </header>
-      <FileUpload
-        onDrop={onDrop}
-        isLoading={isLoading}
-        accept={['application/vnd.ms-excel', 'text/csv']}
-      />
-      {records ? (
+      {data ? (
         <>
-          <div style={{ margin: '24px 0' }} />
+          <Grid justify={'space-between'} columns={7}>
+            <Col span={2}>
+              <Input
+                size="sm"
+                value={search}
+                placeholder="Search"
+                onChange={({ target: { value } }) => setSearch(value)}
+              />
+            </Col>
+            <Col span={1}>
+              <Button onClick={reset}>Clear Data</Button>
+            </Col>
+          </Grid>
+          <div style={{ padding: 10 }} />
           <Table striped highlightOnHover>
             <caption>Total quantity traded Buy + Sell actions</caption>
             <thead>
@@ -72,7 +105,7 @@ const Home: NextPage = () => {
               </tr>
             </thead>
             <tbody>
-              {records.map(row => (
+              {data.map(row => (
                 <tr key={row.symbol}>
                   <td>{row.symbol}</td>
                   <td>{row.name}</td>
@@ -85,7 +118,13 @@ const Home: NextPage = () => {
           </Table>
           <div style={{ padding: 16 }} />
         </>
-      ) : null}
+      ) : (
+        <FileUpload
+          onDrop={onDrop}
+          isLoading={isLoading}
+          accept={['application/vnd.ms-excel', 'text/csv']}
+        />
+      )}
     </Container>
   );
 };
@@ -112,12 +151,8 @@ async function parseTradesFile(files: File[]): Promise<Trade[]> {
 function formatTrades(trades: Trade[]): unknown[] {
   const result = Object.entries(groupedByMap(trades, 'symbol'))
     .map(([_, value]) => {
-      let obj = { ...value[0], quantity: 0 };
-
-      delete obj.price;
-      delete obj.client;
-      delete obj.action;
-      delete obj.remarks;
+      const obj = { ...value[0], quantity: 0 };
+      obj.constituents = value;
 
       value.forEach(curr => {
         if (curr.action === Actions.BUY) {
