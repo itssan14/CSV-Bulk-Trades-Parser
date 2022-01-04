@@ -7,6 +7,7 @@ import { useNotifications } from '@mantine/notifications';
 
 import useDebounce from 'hooks/useDebounce';
 import { FileUpload } from 'components/FileUpload';
+import { TradeDetailsModal } from 'components/TradeDetailsModal/TradeDetailsModal';
 import { groupedByMap, swapKeyValueOfObject } from 'utils';
 import { getCSVContent, parseCSVString } from 'utils/csv';
 import { HEADER_LABELS } from 'constants/header';
@@ -19,6 +20,7 @@ const labelKeyMap = Object.freeze(swapKeyValueOfObject(HEADER_LABELS));
 
 const Home: NextPage = () => {
   const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(null);
   const [records, setRecords] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const notifications = useNotifications();
@@ -106,7 +108,11 @@ const Home: NextPage = () => {
             </thead>
             <tbody>
               {data.map(row => (
-                <tr key={row.symbol}>
+                <tr
+                  key={row.symbol}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => setSelected(row)}
+                >
                   <td>{row.symbol}</td>
                   <td>{row.name}</td>
                   <td style={{ textAlign: 'right' }}>
@@ -117,6 +123,10 @@ const Home: NextPage = () => {
             </tbody>
           </Table>
           <div style={{ padding: 16 }} />
+          <TradeDetailsModal
+            onClose={() => setSelected(null)}
+            data={selected}
+          />
         </>
       ) : (
         <FileUpload

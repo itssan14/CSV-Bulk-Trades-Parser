@@ -1,0 +1,16 @@
+.table {
+  & > thead,
+  & > tfoot {
+    position: sticky;
+    background: white;
+    padding: 0.5rem;
+  }
+
+  & > thead {
+    inset-block-start: 0;
+  }
+
+  & > tfoot {
+    inset-block-end: 0;
+  }
+}
