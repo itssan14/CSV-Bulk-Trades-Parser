@@ -1,5 +1,6 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useEffect } from 'react';
 import { Modal, Table } from '@mantine/core';
+import { useScrollLock } from '@mantine/hooks';
 import { Actions } from 'types/trades';
 
 import styles from './TradeDetailsModal.module.scss';
@@ -13,6 +14,12 @@ export const TradeDetailsModal: FunctionComponent<Props> = ({
   data,
   onClose,
 }) => {
+  const [, setScrollLocked] = useScrollLock();
+
+  useEffect(() => {
+    setScrollLocked(data ? true : false);
+  }, [data, setScrollLocked]);
+
   if (!data) {
     return null;
   }
@@ -22,7 +29,11 @@ export const TradeDetailsModal: FunctionComponent<Props> = ({
       opened={true}
       onClose={onClose}
       size="70vw"
-      title={<b>Actions on {data?.symbol}</b>}
+      title={
+        <div style={{ marginLeft: 8 }}>
+          Actions on <b>{data?.symbol}</b>
+        </div>
+      }
       centered
       overflow="inside"
       padding="sm"
@@ -51,10 +62,7 @@ export const TradeDetailsModal: FunctionComponent<Props> = ({
         </tbody>
         <tfoot>
           <tr>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th style={{ textAlign: 'right' }}>
+            <th colSpan={4} style={{ textAlign: 'right' }}>
               {Number(data.quantity).toLocaleString('en-IN')}
             </th>
           </tr>
